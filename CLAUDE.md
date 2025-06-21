@@ -27,4 +27,8 @@ This is a TypeScript project focused on Test-Driven Development (TDD) using Vite
 
 ## Development Workflow
 
-The project is set up for TDD with `npm run tdd` providing watch mode for continuous testing during development. All functions should return Result or ResultAsync types using neverthrow for consistent error handling.
+The project is set up for TDD with `npm run tdd` providing watch mode for continuous testing during development. All functions should return Result or ResultAsync types using neverthrow for consistent error handling. After Claude has made edits and they've been approved by the developer and you save, no need to run `npm test`; the developer should have `npm run tdd` running, so the tests will run once you save.
+
+## Typing Rules
+
+Do not use the `any` type, instead use `unknown`. If you have to convert `unknown` to some other type, ask the developer what to do, with type narrowing suggestions if applicable.
