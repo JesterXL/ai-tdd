@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { healthCheck, Person, readJSON, readPeople } from '.'
+import { healthCheck, Person, readJSON, readPeople, savePeople } from '.'
 import { Result, ResultAsync } from 'neverthrow'
 describe("index.ts", () => {
     
     describe('/health', () => {
         it('should send a 200', async () => {
             const result = await healthCheck()
-            expect(result.isOk())
+            expect(result.isOk()).toBe(true)
         })
     })
 
@@ -36,7 +36,7 @@ describe("index.ts", () => {
                 age: { age: 45 }
             }
             const people:Person[] = [ jesse ]
-            const peopleJSON:string = JSON.parse(JSON.stringify(people))
+            const peopleJSON:unknown = JSON.parse(JSON.stringify(people))
             const stubReadJSON = (_path:string) => Promise.resolve(peopleJSON)
             const result:Result<Person[], Error> = await readPeople(stubReadJSON)
             console.log("result:", result)
@@ -52,6 +52,30 @@ describe("index.ts", () => {
         it('should fail to read people in an unhappy path', async () => {
             const stubReadJSONUnhappy = (_path:string) => Promise.reject(new Error('unit test: error'))
             const result:Result<Person[], Error> = await readPeople(stubReadJSONUnhappy)
+            expect(result.isErr()).toBe(true)
+        })
+    })
+    describe('savePeople', () => {
+        it('should save people in the happy path', async () => {
+            const jesse:Person = {
+                firstName: { firstName: 'Jesse' },
+                lastName: { lastName: 'Warden' },
+                age: { age: 46 }
+            }
+            const people:Person[] = [jesse]
+            const stubWriteFile = (path:string, data:string) => Promise.resolve([path, data])
+            const result = await savePeople(stubWriteFile, people)
+            expect(result.isOk()).toBe(true)
+        })
+        it('should fail to save people in the unhappy path', async () => {
+            const jesse:Person = {
+                firstName: { firstName: 'Jesse' },
+                lastName: { lastName: 'Warden' },
+                age: { age: 46 }
+            }
+            const people:Person[] = [jesse]
+            const stubWriteFileFail = (path:string, data:string) => Promise.reject(new Error('unit test: failed intentionally'))
+            const result = await savePeople(stubWriteFileFail, people)
             expect(result.isErr()).toBe(true)
         })
     })

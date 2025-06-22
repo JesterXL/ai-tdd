@@ -35,3 +35,12 @@ export const readPeople = (
         readJSONFunc('people.json').then(data => data as Person[]),
         (error) => error instanceof Error ? error : new Error(String(error))
     )
+
+export const savePeople = (
+    writeFileFunc: (path: string, data: string) => Promise<unknown>,
+    people: Person[]
+): ResultAsync<unknown, Error> =>
+    ResultAsync.fromPromise(
+        writeFileFunc('people.json', JSON.stringify(people)),
+        (error) => error instanceof Error ? error : new Error(String(error))
+    )
