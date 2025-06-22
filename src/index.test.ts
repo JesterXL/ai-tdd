@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { healthCheck, Person, readJSON, readPeople, savePeople } from '.'
+import { healthCheck, Person, readJSON, readPeople, savePeople, getPeople } from '.'
 import { Result, ResultAsync } from 'neverthrow'
 describe("index.ts", () => {
     
@@ -77,6 +77,37 @@ describe("index.ts", () => {
             const stubWriteFileFail = (path:string, data:string) => Promise.reject(new Error('unit test: failed intentionally'))
             const result = await savePeople(stubWriteFileFail, people)
             expect(result.isErr()).toBe(true)
+        })
+    })
+    describe('getPeople', () => {
+        it('should get 1 or 2 people from a basic event', async () => {
+            const event = {
+                queryParameters: {
+                    offset: 0,
+                    limit: 2
+                }
+            }
+            const stubReadPeople = () => Promise.resolve([
+                {
+                    firstName: { firstName: 'Jesse' },
+                    lastName: { lastName: 'Warden' },
+                    age: { age: 46 }
+                },
+                {
+                    firstName: { firstName: 'Brandy' },
+                    lastName: { lastName: 'Fortune' },
+                    age: { age: 23 }
+                },
+                {
+                    firstName: { firstName: 'Albus' },
+                    lastName: { lastName: 'Dumbledog' },
+                    age: { age: 9 }
+                }
+            ])
+            const result = await getPeople(stubReadPeople, event)
+            expect(result.statusCode).toBe(200)
+            const json = JSON.parse(result.body)
+            expect(json.length).toBe(2)
         })
     })
     

@@ -1,4 +1,5 @@
 import { okAsync, ResultAsync } from "neverthrow";
+import { z } from "zod";
 
 export const healthCheck = ():ResultAsync<boolean, never> =>
     okAsync(true)
@@ -44,3 +45,30 @@ export const savePeople = (
         writeFileFunc('people.json', JSON.stringify(people)),
         (error) => error instanceof Error ? error : new Error(String(error))
     )
+
+export const QueryParametersSchema = z.object({
+    offset: z.number().int(),
+    limit: z.number().int()
+})
+
+export const EventSchema = z.object({
+    queryParameters: QueryParametersSchema
+})
+
+export type QueryParameters = z.infer<typeof QueryParametersSchema>
+export type Event = z.infer<typeof EventSchema>
+
+export const getPeople = async (
+    readPeopleFunc: () => Promise<Person[]>,
+    event: Event
+): Promise<{ statusCode: number; body: string }> => {
+    const people = await readPeopleFunc()
+    const { offset, limit } = event.queryParameters
+    const paginatedPeople = people.slice(offset, offset + limit)
+    
+    return {
+        statusCode: 200,
+        body: JSON.stringify(paginatedPeople)
+    }
+}
+
