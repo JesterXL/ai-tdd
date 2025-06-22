@@ -58,17 +58,25 @@ export const EventSchema = z.object({
 export type QueryParameters = z.infer<typeof QueryParametersSchema>
 export type Event = z.infer<typeof EventSchema>
 
-export const getPeople = async (
+export type Response = {
+    statusCode: number
+    body: string
+}
+
+export const getPeople = (
     readPeopleFunc: () => Promise<Person[]>,
     event: Event
-): Promise<{ statusCode: number; body: string }> => {
-    const people = await readPeopleFunc()
-    const { offset, limit } = event.queryParameters
-    const paginatedPeople = people.slice(offset, offset + limit)
-    
-    return {
-        statusCode: 200,
-        body: JSON.stringify(paginatedPeople)
-    }
-}
+): ResultAsync<Response, Error> =>
+    ResultAsync.fromPromise(
+        readPeopleFunc(),
+        (error) => error instanceof Error ? error : new Error(String(error))
+    ).map(people => {
+        const { offset, limit } = event.queryParameters
+        const paginatedPeople = people.slice(offset, offset + limit)
+        
+        return {
+            statusCode: 200,
+            body: JSON.stringify(paginatedPeople)
+        }
+    })
 

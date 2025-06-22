@@ -105,9 +105,13 @@ describe("index.ts", () => {
                 }
             ])
             const result = await getPeople(stubReadPeople, event)
-            expect(result.statusCode).toBe(200)
-            const json = JSON.parse(result.body)
-            expect(json.length).toBe(2)
+            if(result.isOk()) {
+                expect(result.value.statusCode).toBe(200)
+                const json = JSON.parse(result.value.body)
+                expect(json.length).toBe(2)
+            } else {
+                throw new Error('wrong result type')
+            }
         })
     })
     
