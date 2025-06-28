@@ -1,82 +1,23 @@
-import { okAsync, ResultAsync } from "neverthrow";
-import { z } from "zod";
-
-export const healthCheck = ():ResultAsync<boolean, never> =>
-    okAsync(true)
-
-export const readJSON = (
-    fsReadFile: (path: string) => Promise<string>, 
+export interface APIGatewayEvent {
+    httpMethod: string
     path: string
-): ResultAsync<unknown, Error> =>
-    ResultAsync.fromPromise(
-        fsReadFile(path).then(content => JSON.parse(content)),
-        (error) => error instanceof Error ? error : new Error(String(error))
-    )
-
-export type Person = {
-    firstName: FirstName
-    lastName: LastName
-    age: Age
+    queryStringParameters?: QueryParameters | null
+    body?: string | null
 }
 
-type FirstName = {
-    firstName: string
-}
-type LastName = {
-    lastName: string
-}
-type Age = {
-    age: number
+export interface QueryParameters {
+    [key: string]: string | undefined
 }
 
-export const readPeople = (
-    readJSONFunc: (path: string) => Promise<unknown>
-): ResultAsync<Person[], Error> =>
-    ResultAsync.fromPromise(
-        readJSONFunc('people.json').then(data => data as Person[]),
-        (error) => error instanceof Error ? error : new Error(String(error))
-    )
-
-export const savePeople = (
-    writeFileFunc: (path: string, data: string) => Promise<unknown>,
-    people: Person[]
-): ResultAsync<unknown, Error> =>
-    ResultAsync.fromPromise(
-        writeFileFunc('people.json', JSON.stringify(people)),
-        (error) => error instanceof Error ? error : new Error(String(error))
-    )
-
-export const QueryParametersSchema = z.object({
-    offset: z.number().int(),
-    limit: z.number().int()
-})
-
-export const EventSchema = z.object({
-    queryParameters: QueryParametersSchema
-})
-
-export type QueryParameters = z.infer<typeof QueryParametersSchema>
-export type Event = z.infer<typeof EventSchema>
-
-export type Response = {
+export interface APIGatewayResponse {
     statusCode: number
     body: string
+    headers?: { [key: string]: string }
 }
 
-export const getPeople = (
-    readPeopleFunc: () => Promise<Person[]>,
-    event: Event
-): ResultAsync<Response, Error> =>
-    ResultAsync.fromPromise(
-        readPeopleFunc(),
-        (error) => error instanceof Error ? error : new Error(String(error))
-    ).map(people => {
-        const { offset, limit } = event.queryParameters
-        const paginatedPeople = people.slice(offset, offset + limit)
-        
-        return {
-            statusCode: 200,
-            body: JSON.stringify(paginatedPeople)
-        }
-    })
-
+export async function healthCheck(): Promise<APIGatewayResponse> {
+    return {
+        statusCode: 200,
+        body: ''
+    }
+}
