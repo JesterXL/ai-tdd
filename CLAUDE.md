@@ -50,6 +50,26 @@ type Species
 
 When creating types in Zod, prefer `z.union` instead of `z.enum` since our TypeScript types prefer Unions.
 
+## Errors, Functions that can Fail, and The NeverThrow Library
+
+When functions can fail, typially, you'd either allow the exception to happen, or throw an error if it was intentional. An example would be this function throws an error if the name does not equal 'Jesse':
+```typescript
+const isJesse = (name:string):boolean => {
+    if(name === 'Jesse') {
+        return true
+    } else {
+        throw new Error('Not Jesse')
+    }
+}
+```
+
+This function has 3 problems:
+1. There is no typesafe way in TypeScript to type the error. Our goal is to write as type safe code as possible.
+2. This function's types lie. This means that it says it returns a boolean, but in the failure case does not. This means we cannot read the function types, and trust them; because they are not true. This in turn makes them not typesafe.
+3. Developers have to read the code to know how it works. We'd rather they read the types and know all they need to know about how the function works.
+
+These 3 problems are solved in TypeScript by using the NeverThrow library. It implements a `Result<T, E>` type for errors in synchronous code and a `ResultAsync<T, E>` type for asynchronous errors (e.g. a `Promise<Result<T, E>>`). When functions can fail, prefer using a `Result` or a `ResultAsync` for the return type.
+
 # Test Driven Development
 
 When writing code, you do not need to run `npm run test` when complete. We're utilizing Test Driven Development, and running the `npm run tdd` command. This runs vitest in watch mode, thus the tests are always running.
