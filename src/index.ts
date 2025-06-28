@@ -32,19 +32,24 @@ const PersonSchema = z.object({
     lastName: z.string(),
     species: SpeciesSchema
 })
+const PeopleSchema = z.array(PersonSchema)
 
 export type Species = z.infer<typeof SpeciesSchema>
 export type Person = z.infer<typeof PersonSchema>
+export type People = z.infer<typeof PeopleSchema>
 
 export function safeParsePeople(jsonString: string): Result<Person[], Error> {
-    if (jsonString === '"🐄"') {
-        return err(new Error('Bad JSON'))
+    try {
+        const result = JSON.parse(jsonString)
+        const { success, data, error } = PeopleSchema.safeParse(result)
+        if(success) {
+            return ok(data)
+        } else {
+            return err(new Error('Validation error'))
+        }
+    } catch(error) {
+        return err(new Error('JSON parsing error'))
     }
-    return ok([{
-        firstName: 'Jesse',
-        lastName: 'Warden',
-        species: 'Human'
-    }])
 }
 
 

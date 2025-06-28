@@ -104,3 +104,43 @@ export function safeParsePeople(jsonString: string): Result<Person[], Error> {
     }
 }
 ```
+
+However, keep in mind, once the test passes, you can continue to refactor to the function to implement additional tests. For example, if we add an unhappy path test to the above, that may look something like this:
+```typescript
+it('should fail to parse bad JSON in an unhappy path', () => {
+    const badCowJSON:string = JSON.stringify('🐄')
+    const result:Result<Person[], Error> = safeParsePeople(badCowJSON)
+    expect(result.isErr()).toBe(true)
+})
+```
+
+To get the code to a Green stage, yes, the following would technically be true:
+```typescript
+export function safeParsePeople(jsonString: string): Result<Person[], Error> {
+    if (jsonString === '"🐄"') {
+        return err(new Error('Bad JSON'))
+    }
+    return ok([{
+        firstName: 'Jesse',
+        lastName: 'Warden',
+        species: 'Human'
+    }])
+}
+```
+
+However, what we're looking for is the behavior of the failing test, not checking an explicit string. The the behavior is bad JSON causing `JSON.parse` to fail. That's the behavior we're attempting to test here in the unhappy path. A better implementation would look like:
+```typescript
+export function safeParsePeople(jsonString: string): Result<Person[], Error> {
+    try {
+        const result = JSON.parse(jsonString)
+        const { success, data, error } = PeopleSchema.safeParse(jsonString)
+        if(success) {
+            return ok(data)
+        } else {
+            return err(new Error('error'))
+        }
+    } catch(error) {
+        return err(new Error('error'))
+    }
+}
+```
