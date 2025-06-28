@@ -69,4 +69,11 @@ export function readPeopleFromDisk(filepath: string, filesystem: typeof fs): Res
     })
 }
 
+export function writePeopleToDisk(filepath: string, content: string, filesystem: typeof fs): ResultAsync<void, Error> {
+    return ResultAsync.fromPromise(
+        filesystem.writeFile(filepath, content, 'utf8'),
+        (error: unknown) => new Error(`Failed to write file: ${error}`)
+    )
+}
+
 
