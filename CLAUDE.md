@@ -46,6 +46,10 @@ type Species
   | 'Dog'
 ```
 
+## Unknown Types
+
+When you don't know enough information about a type, you may reach for `any`. However, we want to avoid that. First, the tsconfig.json has strict mode enabled. This should be preventing the use of `any`. More importantly, though, we want our code to be typesafe. A better type to use is `unknown`. If, however, we have to cast or convert the types, and we're not using Zod, then `unknown` may not work. If that's the case, and you find yourself reaching for `any` or `unknown`, stop, let's talk about it. We'll find a way together to make the types work. 
+
 ## Zod
 
 When creating types in Zod, prefer `z.union` instead of `z.enum` since our TypeScript types prefer Unions.
@@ -69,6 +73,8 @@ This function has 3 problems:
 3. Developers have to read the code to know how it works. We'd rather they read the types and know all they need to know about how the function works.
 
 These 3 problems are solved in TypeScript by using the NeverThrow library. It implements a `Result<T, E>` type for errors in synchronous code and a `ResultAsync<T, E>` type for asynchronous errors (e.g. a `Promise<Result<T, E>>`). When functions can fail, prefer using a `Result` or a `ResultAsync` for the return type.
+
+When returning asynchornous values, you may think you can utilize something like: `Promise<Result<Person[], Error>>`. While that's fine, we should be more explicit, and utilize the `ResultAsync` type instead. So the above example would be `ResultAsync<Person[], Error>` instead.
 
 # Test Driven Development
 

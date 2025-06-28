@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Result, ok, err, ResultAsync } from 'neverthrow'
+import { Result, ok, err, ResultAsync, errAsync, okAsync } from 'neverthrow'
 
 export interface APIGatewayEvent {
     httpMethod: string
@@ -52,8 +52,8 @@ export function safeParsePeople(jsonString: string): Result<Person[], Error> {
     }
 }
 
-export async function readPeopleFromDisk(filepath: string, fs: any): Promise<Result<Person[], Error>> {
-    return ok([{ firstName: 'Jesse', lastName: 'Warden', species: 'Human' }])
+export function readPeopleFromDisk(filepath: string, fs: any): ResultAsync<Person[], Error> {
+    return okAsync([{ firstName: 'Jesse', lastName: 'Warden', species: 'Human' }])
 }
 
 
