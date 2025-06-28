@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { APIGatewayEvent, Person, QueryParameters, healthCheck, safeParsePeople, readPeopleFromDisk } from "."
 import { Result } from 'neverthrow'
-
+import { promises as fs } from 'fs'
 
 describe('Lambda GET API', () => {
     describe('healthCheck', () => {
@@ -35,7 +35,7 @@ describe('Lambda GET API', () => {
     })
     describe('readPeopleFromDisk', () => {
         it('should read people JSON from disk in a happy path', async () => {
-            const stubFS = {
+            const stubFS: typeof fs = {
                 readFile: (_filepath:string, _encoding:string) =>
                     Promise.resolve(
                         JSON.stringify(
@@ -44,9 +44,17 @@ describe('Lambda GET API', () => {
                             ]
                         )
                     )
-            }
+            } as typeof fs
             const result = await readPeopleFromDisk('people.json', stubFS)
             expect(result.isOk()).toBe(true)
+        })
+        it('should fail to read people JSON from disk in an unhappy path when the file fails to read', async () => {
+            const stubUnhappyFS: typeof fs = {
+                readFile: (_filepath:string, _encoding:string) =>
+                    Promise.reject(new Error('unit test: failed to read file'))
+            } as typeof fs
+            const result = await readPeopleFromDisk('people.json', stubUnhappyFS)
+            expect(result.isErr()).toBe(true)
         })
     })
 })

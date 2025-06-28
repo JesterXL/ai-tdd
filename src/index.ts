@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { Result, ok, err, ResultAsync, errAsync, okAsync } from 'neverthrow'
+import { promises as fs } from 'fs'
 
 export interface APIGatewayEvent {
     httpMethod: string
@@ -52,8 +53,20 @@ export function safeParsePeople(jsonString: string): Result<Person[], Error> {
     }
 }
 
-export function readPeopleFromDisk(filepath: string, fs: any): ResultAsync<Person[], Error> {
-    return okAsync([{ firstName: 'Jesse', lastName: 'Warden', species: 'Human' }])
+export function readPeopleFromDisk(filepath: string, filesystem: typeof fs): ResultAsync<Person[], Error> {
+    return ResultAsync.fromPromise(
+        filesystem.readFile(filepath, 'utf8'),
+        (error: unknown) => new Error(`Failed to read file: ${error}`)
+    ).andThen((fileContents:unknown) => {
+        if(typeof fileContents === 'string') {
+            const parseResult = safeParsePeople(fileContents)
+            return parseResult.isOk() 
+                ? okAsync(parseResult.value)
+                : errAsync(parseResult.error)
+        } else {
+            return errAsync(new Error(`fileContents is not a string, typeof is: ${typeof fileContents}`))
+        }
+    })
 }
 
 
