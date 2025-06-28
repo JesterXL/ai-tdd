@@ -27,5 +27,10 @@ describe('Lambda GET API', () => {
             const result:Result<Person[], Error> = safeParsePeople(peopleJSON)
             expect(result.isOk()).toBe(true)
         })
+        it('should fail to parse bad JSON in an unhappy path', () => {
+            const badCowJSON:string = JSON.stringify('🐄')
+            const result:Result<Person[], Error> = safeParsePeople(badCowJSON)
+            expect(result.isErr()).toBe(true)
+        })
     })
 })
