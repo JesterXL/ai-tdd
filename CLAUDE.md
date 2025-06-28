@@ -26,3 +26,26 @@ This is a TypeScript project focused on test-driven development (TDD) practices:
 - **TypeScript Config**: Strict mode enabled with ES2024 target and CommonJS modules
 
 The project follows a minimal structure with the main application logic in `src/index.ts` and corresponding tests in `src/index.test.ts`.
+
+# TypeScript
+
+## Creating Types
+
+- prefer Union Types over Enums. For example, instead of creating a `Species` type like a TypeScript Enum:
+```typescript
+enum Species {
+  Human,
+  Dog
+}
+```
+
+Instead, you should utilize a TypeScript Union:
+```typescript
+type Species
+  = 'Human'
+  | 'Dog'
+```
+
+## Zod
+
+When creating types in Zod, prefer `z.union` instead of `z.enum` since our TypeScript types prefer Unions.

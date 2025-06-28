@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 export interface APIGatewayEvent {
     httpMethod: string
     path: string
@@ -21,3 +23,15 @@ export async function healthCheck(): Promise<APIGatewayResponse> {
         body: ''
     }
 }
+
+const SpeciesSchema = z.union([z.literal('Human'), z.literal('Dog')])
+
+const PersonSchema = z.object({
+    firstName: z.string(),
+    lastName: z.string(),
+    species: SpeciesSchema
+})
+
+export type Species = z.infer<typeof SpeciesSchema>
+export type Person = z.infer<typeof PersonSchema>
+
