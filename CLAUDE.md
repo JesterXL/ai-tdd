@@ -50,6 +50,10 @@ type Species
 
 When you don't know enough information about a type, you may reach for `any`. However, we want to avoid that. First, the tsconfig.json has strict mode enabled. This should be preventing the use of `any`. More importantly, though, we want our code to be typesafe. A better type to use is `unknown`. If, however, we have to cast or convert the types, and we're not using Zod, then `unknown` may not work. If that's the case, and you find yourself reaching for `any` or `unknown`, stop, let's talk about it. We'll find a way together to make the types work. 
 
+## Type Casting and Type Narrowing
+
+When writing types, avoid using the `as` as much as possible. It is dangerous and can turn of critical type safe features. If you feel like you need `as`, stop, and let's talk about it to see if we can figure out how to cast it correctly.
+
 ## Zod
 
 When creating types in Zod, prefer `z.union` instead of `z.enum` since our TypeScript types prefer Unions.
@@ -169,4 +173,39 @@ export function safeParsePeople(jsonString: string): Result<Person[], Error> {
         return err(new Error('error'))
     }
 }
+```
+
+# Code Style
+
+For TypeScript and JavaScript, we should prefer Arrow functions over old school named function syntax. We should also avoid anonymous functions.
+
+For example, here is a function that does 2 style things incorrectly.
+```typescript
+export function writePeopleToDisk(filepath: string, content: string, filesystem: typeof fs): ResultAsync<void, Error> {
+    return ResultAsync.fromPromise(
+        filesystem.writeFile(filepath, content, 'utf8'),
+        (error: unknown) => new Error(`Failed to write file: ${error}`)
+    )
+}
+```
+
+First, it's using `export function writePeopleToDisk(filepath: string, content: string, filesystem: typeof fs): ResultAsync<void, Error> {...} ` when it should instead be `export const writePeopleToDisk(filepath: string, content: string, filesystem: typeof fs): ResultAsync<void, Error> => {...}`
+
+Second, you'll notice the function is using the `return` keyword. While Arrow functions support the return keyword, we should endeavor to create expressions. They are more pure function esque, compose easier, prevent the use of temporary variables, and thus imperative codding styles which we should avoid. It's ok to do them in unit tests when we're just trying to get to the Green step, but we should still try, perhaps when Refactoring or code review. An example would be, again, that above function:
+```typescript
+export function writePeopleToDisk(filepath: string, content: string, filesystem: typeof fs): ResultAsync<void, Error> {
+    return ResultAsync.fromPromise(
+        filesystem.writeFile(filepath, content, 'utf8'),
+        (error: unknown) => new Error(`Failed to write file: ${error}`)
+    )
+}
+```
+
+We could rewrite in our preferred style like this:
+```typescript
+export const writePeopleToDisk = (filepath: string, content: string, filesystem: typeof fs): ResultAsync<void, Error> =>
+    ResultAsync.fromPromise(
+        filesystem.writeFile(filepath, content, 'utf8'),
+        (error: unknown) => new Error(`Failed to write file: ${error}`)
+    )
 ```

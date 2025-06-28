@@ -19,12 +19,10 @@ export interface APIGatewayResponse {
     headers?: { [key: string]: string }
 }
 
-export async function healthCheck(): Promise<APIGatewayResponse> {
-    return {
-        statusCode: 200,
-        body: ''
-    }
-}
+export const healthCheck = async (): Promise<APIGatewayResponse> => ({
+    statusCode: 200,
+    body: ''
+})
 
 const SpeciesSchema = z.union([z.literal('Human'), z.literal('Dog')])
 
@@ -39,25 +37,23 @@ export type Species = z.infer<typeof SpeciesSchema>
 export type Person = z.infer<typeof PersonSchema>
 export type People = z.infer<typeof PeopleSchema>
 
-export function safeParsePeople(jsonString: string): Result<Person[], Error> {
+export const safeParsePeople = (jsonString: string): Result<Person[], Error> => {
     try {
         const result = JSON.parse(jsonString)
-        const { success, data, error } = PeopleSchema.safeParse(result)
-        if(success) {
-            return ok(data)
-        } else {
-            return err(new Error('Validation error'))
-        }
+        const { success, data } = PeopleSchema.safeParse(result)
+        return success 
+            ? ok(data)
+            : err(new Error('Validation error'))
     } catch(error) {
         return err(new Error('JSON parsing error'))
     }
 }
 
-export function readPeopleFromDisk(filepath: string, filesystem: typeof fs): ResultAsync<Person[], Error> {
-    return ResultAsync.fromPromise(
+export const readPeopleFromDisk = (filepath: string, filesystem: typeof fs): ResultAsync<Person[], Error> =>
+    ResultAsync.fromPromise(
         filesystem.readFile(filepath, 'utf8'),
         (error: unknown) => new Error(`Failed to read file: ${error}`)
-    ).andThen((fileContents:unknown) => {
+    ).andThen((fileContents: unknown) => {
         if(typeof fileContents === 'string') {
             const parseResult = safeParsePeople(fileContents)
             return parseResult.isOk() 
@@ -67,13 +63,11 @@ export function readPeopleFromDisk(filepath: string, filesystem: typeof fs): Res
             return errAsync(new Error(`fileContents is not a string, typeof is: ${typeof fileContents}`))
         }
     })
-}
 
-export function writePeopleToDisk(filepath: string, content: string, filesystem: typeof fs): ResultAsync<void, Error> {
-    return ResultAsync.fromPromise(
+export const writePeopleToDisk = (filepath: string, content: string, filesystem: typeof fs): ResultAsync<void, Error> =>
+    ResultAsync.fromPromise(
         filesystem.writeFile(filepath, content, 'utf8'),
         (error: unknown) => new Error(`Failed to write file: ${error}`)
     )
-}
 
 
